@@ -3,9 +3,10 @@
   "useCommonJs": true,
   "fileName": "endpoint.js",
   "prefix": { 
-  	"change": true,
+  	"change": false,
   	"oldPrefix" : "api",
   	"newPrefix" : "_api"
   }
 }
 
+	
