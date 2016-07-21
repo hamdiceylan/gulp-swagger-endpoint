@@ -1,6 +1,6 @@
 {
   "name": "gulp-swagger-endpoint",
-  "version": "1.0.7",
+  "version": "1.0.10",
   "description": "Endpoint exporter for swagger",
   "main": "index.js",
   "scripts": {
