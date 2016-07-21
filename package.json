@@ -4,7 +4,7 @@
   "description": "Endpoint exporter for swagger",
   "main": "index.js",
   "scripts": {
-    "test": ""
+    "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -18,13 +18,15 @@
   "author": "Hamdi Ceylan",
   "license": "MIT",
   "dependencies": {
+    "chai": "^3.5.0",
     "event-stream": "^3.3.4",
     "gulp-concat": "^2.6.0",
     "gulp-footer": "^1.0.5",
     "gulp-header": "^1.8.7",
     "gulp-util": "^3.0.7",
     "jsesc": "^2.2.0",
-    "through2": "^2.0.1",
-    "request": "^2.73.0"
+    "mocha": "^2.5.3",
+    "request": "^2.73.0",
+    "through2": "^2.0.1"
   }
 }

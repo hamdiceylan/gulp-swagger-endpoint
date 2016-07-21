@@ -1,12 +1,11 @@
-var path = require('path');
-var assert = require('assert');
-var gutil = require('gulp-util');
+var expect    = require("chai").expect;
+var converter = require("../index.js");
 
+describe("Endpoint exporter from swagger", function() {
+    it("Should Create a valid js file", function() {
+      var number   = "5";
 
-describe('gulp-swagger-endpoint', function () {
+      expect(number).to.equal("5");
+    });
 
-	it('should create a valid js file from given swagger domain'){
-		//Need to implement
-	}
-
-}
+});
