@@ -1,11 +1,47 @@
 var expect    = require("chai").expect;
-var converter = require("../index.js");
+var gutil = require('gulp-util');
+var mainModule = require("../index.js");
+var config = require("../config.json");
 
 describe("Endpoint exporter from swagger", function() {
-    it("Should Create a valid js file", function() {
-      var number   = "5";
 
-      expect(number).to.equal("5");
+   it('should build valid js file from swagger api with commonjs', function (cb) {
+    var stream = mainModule();
+    config.useCommonJs = false;
+    stream.on('data', function (file) {
+      
+      expect(file.contents.toString('utf8')).to.contain('API_URLS');
+      //expect(file.contents.toString('utf8')).to.not.contain('module.exports');
+      cb();
     });
+
+    stream.write(new gutil.File({
+      base: __dirname,
+      path: __dirname + '/endpoint.js',
+      contents: new Buffer('')
+    }));
+
+    stream.end();
+  });
+
+  it('should build valid js file from swagger api without commonjs', function (cb) {
+    var stream = mainModule();
+
+    stream.on('data', function (file) {
+
+      expect(file.contents.toString('utf8')).to.contain('API_URLS');
+      expect(file.contents.toString('utf8')).to.contain('module.exports');
+
+      cb();
+    });
+
+    stream.write(new gutil.File({
+      base: __dirname,
+      path: __dirname + '/endpoint.js',
+      contents: new Buffer('')
+    }));
+
+    stream.end();
+  });
 
 });
