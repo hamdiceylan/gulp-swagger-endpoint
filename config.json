@@ -1,6 +1,11 @@
 {
   "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
   "useCommonJs": true,
-  "fileName": "endpoint.js"
+  "fileName": "endpoint.js",
+  "prefix": { 
+  	"change": true,
+  	"oldPrefix" : "api",
+  	"newPrefix" : "_api"
+  }
 }
 

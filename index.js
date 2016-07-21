@@ -44,8 +44,10 @@ function endPointFiles() {
           var singleEndPoint = pathKey;
           for (var methodKey in obj.paths[pathKey]){
                 endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ":"
-                endPointList += "'" + singleEndPoint.replace('/api/','/_api/') +  "',\n";  
-
+                if (config.prefix.change) {
+                    singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+                }
+                endPointList += "'" + singleEndPoint +  "',\n";  
           }
       }
 

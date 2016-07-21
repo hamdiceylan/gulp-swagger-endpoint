@@ -16,12 +16,17 @@ npm install gulp-swagger-endpoint --save-dev
 swaggerUrl: Url that points to your swagger JSON schema
 useCommonJs: If using common js to build your app, set this to true. If false, a JS object will be created with your endpoints as Key/Value pairs
 fileName: Your filename
-
+prefix: If you wish to change the prefix of your URL, assign prefix.change to true. e.g. /api/product will change to /_api/product
 ```js
 {
   "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
   "useCommonJs": true,
-  "fileName": "endpoint.js"
+  "fileName": "endpoint.js",
+  "prefix": { 
+  	"change": true,
+  	"oldPrefix" : "api",
+  	"newPrefix" : "_api"
+  }
 }
 
 ```
