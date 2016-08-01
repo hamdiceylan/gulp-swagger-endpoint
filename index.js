@@ -16,11 +16,12 @@ if(config.useCommonJs){
   var FILE_FOOTER = '}};'
 }
 else{
-  var FILE_HEADER = 'API_URLS: { \n';
+  var FILE_HEADER = 'API_URLS = { \n';
   var FILE_FOOTER = '};';  
 }
 
-function endPointFiles() {
+function endPointFiles(apiDomain) {
+
 
   /**
      * Check file status
@@ -40,16 +41,30 @@ function endPointFiles() {
       var paths =obj.paths;
       var endPointList = "";
 
-      for (var pathKey in paths){
-          var singleEndPoint = pathKey;
-          for (var methodKey in obj.paths[pathKey]){
-                endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ":"
-                if (config.prefix.change) {
-                    singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
-                }
-                endPointList += "'" + singleEndPoint +  "',\n";  
-          }
+      if(config.useCommonJs){
+        for (var pathKey in paths){
+            var singleEndPoint = pathKey;
+            for (var methodKey in obj.paths[pathKey]){
+                  endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
+                  if (config.prefix.change) {
+                      singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+                  }
+                  endPointList += "'" + apiDomain + singleEndPoint +  "',\n";  
+            }
+        }
+      } else {
+         for (var pathKey in paths){
+            var singleEndPoint = pathKey;
+            for (var methodKey in obj.paths[pathKey]){
+                  endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
+                  if (config.prefix.change) {
+                      singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+                  }
+                  endPointList += '"' + apiDomain + singleEndPoint + '",\n';  
+            }
+        }
       }
+
 
       file.contents = new Buffer(gutil.template(endPointList, {
         contents: jsesc(file.contents.toString('utf8')),
@@ -67,10 +82,8 @@ function endPointFiles() {
 }
 
 
-function endPointStream() {
-
-  return es.map(endPointFiles());
-
+function endPointStream(apiDomain) {
+  return es.map(endPointFiles(apiDomain));
 }
 
 /**
@@ -79,14 +92,14 @@ function endPointStream() {
  
  */
 
-function endPoint() {
+function endPoint(apiDomain) {
 
   /**
    * Build template
    */
   
   return es.pipeline(
-    endPointStream(),
+    endPointStream(apiDomain),
     concat(config.fileName),
     header(FILE_HEADER),
     footer(FILE_FOOTER)
