@@ -13,7 +13,7 @@ npm install gulp-swagger-endpoint --save-dev
 
 > Set plugin configuration
 
-swaggerUrl: Url that points to your swagger JSON schema
+endpoints: This takes an array of objects, multiple domain and endpoint combinations can be added
 
 useCommonJs: If using common js to build your app, set this to true. If false, a JS object will be created with your endpoints as Key/Value pairs
 
@@ -23,13 +23,16 @@ prefix: If you wish to change the prefix of your URL, assign prefix.change to tr
 
 ```js
 {
-  "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
+  "endpoints": [{
+    "domain": "http://petstore.swagger.io",
+    "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json"
+  }],
   "useCommonJs": true,
   "fileName": "endpoint.js",
   "prefix": { 
-  	"change": true,
-  	"oldPrefix" : "api",
-  	"newPrefix" : "_api"
+    "change": false,
+    "oldPrefix" : "api",
+    "newPrefix" : "_api"
   }
 }
 
@@ -55,17 +58,29 @@ gulp.task('endPoint', function () {
 **endpoints.js**
 
 
->Sample output file
-
+>Sample output file w/ commonJS = true
 
 ```js
 module.exports = {
      API_URLS: {
-         Get_Product:'/api/product',
-         Get_ProductById:'/api/product/{Id}',
-         Get_ProductByCategoryId:'/api/product/{CategoryId}',
-         Post_Product:'/api/product'
+      /*  Endpoints from http://petstore.swagger.io/v2/swagger.json */ 
+         Get_Product: "/api/product",
+         Get_ProductById: "/api/product/{Id}",
+         Get_ProductByCategoryId: "/api/product/{CategoryId}",
+         Post_Product: "/api/product"
      }
 };
+```
+
+>Sample output file w/ commonJS = false
+
+```js
+ API_URLS = {
+    /*  Endpoints from http://petstore.swagger.io/v2/swagger.json */ 
+     "Get_Product": "/api/product",
+     "Get_ProductById": "/api/product/{Id}",
+     "Get_ProductByCategoryId": "/api/product/{CategoryId}",
+     "Post_Product": "/api/product"
+ };
 ```
 

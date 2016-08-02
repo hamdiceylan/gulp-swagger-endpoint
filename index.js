@@ -8,8 +8,11 @@ var request = require("request");
 var config = require("./config.json")
 
 /**
- * Plugin constants
- */
+* Plugin constants
+*/
+
+var count = 0;
+var endPointList = "";
 
 if(config.useCommonJs){
   var FILE_HEADER = 'module.exports  =  { \n API_URLS: { \n'
@@ -20,86 +23,101 @@ else{
   var FILE_FOOTER = '};';  
 }
 
-function endPointFiles(apiDomain) {
-
-
+function endPointFiles() {
   /**
-     * Check file status
+  * Check file status
   */
   return function endPointFile(file, callback) {
-    if (file.processedByTemplateCache) {
-      return callback(null, file);
-    }
+    if (file.processedByEndpointCache) {
+    return callback(null, file);
+  }
 
-    /**
-     * Call Swagger API and parse result
-     */
+  /**
+  * Call Swagger API and parse result
+  */
 
-    request(config.swaggerUrl, function(error, response, body) {
-      
-      var obj = JSON.parse(body);
-      var paths =obj.paths;
-      var endPointList = "";
+  for (var i = 0; i <= config.endpoints.length - 1; i++) {
+    request(config.endpoints[i].swaggerUrl, function(error, response, body) {
 
-      if(config.useCommonJs){
-        for (var pathKey in paths){
-            var singleEndPoint = pathKey;
-            for (var methodKey in obj.paths[pathKey]){
-                  endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
-                  if (config.prefix.change) {
-                      singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
-                  }
-                  endPointList += "'" + apiDomain + singleEndPoint +  "',\n";  
-            }
-        }
-      } else {
-         for (var pathKey in paths){
-            var singleEndPoint = pathKey;
-            for (var methodKey in obj.paths[pathKey]){
-                  endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
-                  if (config.prefix.change) {
-                      singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
-                  }
-                  endPointList += '"' + apiDomain + singleEndPoint + '",\n';  
-            }
+    var obj = JSON.parse(body);
+    var paths =obj.paths;
+
+    endPointList += '/*  Endpoints from '+ config.endpoints[count].swaggerUrl +  ' */ \n';
+
+    if(config.useCommonJs){
+      for (var pathKey in paths){
+        var singleEndPoint = pathKey;
+        for (var methodKey in obj.paths[pathKey]){
+          endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
+          if (config.prefix.change) {
+            singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+          }
+          endPointList += "'" + config.endpoints[count].domain + singleEndPoint +  "',\n";  
         }
       }
+    } else {
+      for (var pathKey in paths){
+        var singleEndPoint = pathKey;
+        for (var methodKey in obj.paths[pathKey]){
+          endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
+          if (config.prefix.change) {
+            singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+          }
+          endPointList += '"' + config.endpoints[count].domain + singleEndPoint + '",\n';  
 
+        }
+      }
+    }
 
-      file.contents = new Buffer(gutil.template(endPointList, {
-        contents: jsesc(file.contents.toString('utf8')),
-        file: file
-      }));
+    count ++;
+    checkCount(file, callback);
 
-      file.processedByTemplateCache = true;
-
-      callback(null, file);
 
     });
+  }
 
   };
 
 }
 
 
-function endPointStream(apiDomain) {
-  return es.map(endPointFiles(apiDomain));
+function checkCount(file, callback) {
+/*
+  The neccessary evil;
+    This in needed inorder to make sure that the request has finished, before it attempts to write to file 
+*/
+  if (count == config.endpoints.length) {
+
+  file.contents = new Buffer(gutil.template(endPointList, {
+    contents: jsesc(file.contents.toString('utf8')),
+    file: file
+  }));
+
+
+  file.processedByEndpointCache = true;
+
+  callback(null, file);  
+  }
+}
+
+function endPointStream() {
+  return es.map(endPointFiles());
 }
 
 /**
- * Create file
- *
- 
- */
+* Create file
+*
 
-function endPoint(apiDomain) {
+*/
 
-  /**
-   * Build template
-   */
-  
+function endPoint() {
+
+/**
+* Build template
+*/
+
   return es.pipeline(
-    endPointStream(apiDomain),
+    endPointStream(),
     concat(config.fileName),
     header(FILE_HEADER),
     footer(FILE_FOOTER)
@@ -108,7 +126,7 @@ function endPoint(apiDomain) {
 }
 
 /**
- * Expose template
- */
+* Expose template
+*/
 
 module.exports = endPoint;
