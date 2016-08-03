@@ -5,7 +5,14 @@ var header = require('gulp-header');
 var footer = require('gulp-footer');
 var jsesc = require('jsesc');
 var request = require("request");
-var config = require("./config.json")
+
+try {
+  var config = require("../../gulp.swagger.conf.json");
+} catch (err){
+    console.log("Please copy the gulp.swagger.conf (located in node_modules/gulp-swagger-endpoint/) file into your root directory (where your package.json is) .. for more information, visit the GitHub page: https://github.com/hamdiceylan/gulp-swagger-endpoint");
+  var config = require("./gulp.swagger.conf.json");
+}
+
 
 /**
 * Plugin constants
@@ -49,8 +56,8 @@ function endPointFiles() {
         var singleEndPoint = pathKey;
         for (var methodKey in obj.paths[pathKey]){
           endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
-          if (config.prefix.change) {
-            singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+          if (config.endpoints[count].prefix.change) {
+            singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
           }
           endPointList += "'" + config.endpoints[count].domain + singleEndPoint +  "',\n";  
         }
@@ -60,8 +67,8 @@ function endPointFiles() {
         var singleEndPoint = pathKey;
         for (var methodKey in obj.paths[pathKey]){
           endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
-          if (config.prefix.change) {
-            singleEndPoint = singleEndPoint.replace(config.prefix.oldPrefix,config.prefix.newPrefix);
+          if (config.endpoints[count].prefix.change) {
+            singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
           }
           endPointList += '"' + config.endpoints[count].domain + singleEndPoint + '",\n';  
 

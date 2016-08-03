@@ -21,19 +21,23 @@ fileName: Your filename
 
 prefix: If you wish to change the prefix of your URL, assign prefix.change to true. e.g. /api/product will change to /_api/product
 
+> gulp.swagger.conf.json file
+
+This is the default configuration file located in the package root, please copy this file into your app root (where your package.json file is), and edit your configuartions there. This is to avoid your beautiful config file being overwritten on an npm update command.
+
 ```js
 {
   "endpoints": [{
     "domain": "http://petstore.swagger.io",
-    "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json"
+    "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
+    "prefix": { 
+      "change": false,
+      "oldPrefix" : "api",
+      "newPrefix" : "_api"
+    }
   }],
   "useCommonJs": true,
-  "fileName": "endpoint.js",
-  "prefix": { 
-    "change": false,
-    "oldPrefix" : "api",
-    "newPrefix" : "_api"
-  }
+  "fileName": "endpoint.js"
 }
 
 ```
@@ -64,10 +68,10 @@ gulp.task('endPoint', function () {
 module.exports = {
      API_URLS: {
       /*  Endpoints from http://petstore.swagger.io/v2/swagger.json */ 
-         Get_Product: "/api/product",
-         Get_ProductById: "/api/product/{Id}",
-         Get_ProductByCategoryId: "/api/product/{CategoryId}",
-         Post_Product: "/api/product"
+         Get_Product: "http://petstore.swagger.io/api/product",
+         Get_ProductById: "http://petstore.swagger.io/api/product/{Id}",
+         Get_ProductByCategoryId: "http://petstore.swagger.io/api/product/{CategoryId}",
+         Post_Product: "http://petstore.swagger.io/api/product"
      }
 };
 ```
@@ -77,10 +81,10 @@ module.exports = {
 ```js
  API_URLS = {
     /*  Endpoints from http://petstore.swagger.io/v2/swagger.json */ 
-     "Get_Product": "/api/product",
-     "Get_ProductById": "/api/product/{Id}",
-     "Get_ProductByCategoryId": "/api/product/{CategoryId}",
-     "Post_Product": "/api/product"
+     "Get_Product": "http://petstore.swagger.io/api/product",
+     "Get_ProductById": "http://petstore.swagger.io/api/product/{Id}",
+     "Get_ProductByCategoryId": "http://petstore.swagger.io/api/product/{CategoryId}",
+     "Post_Product": "http://petstore.swagger.io/api/product"
  };
 ```
 
