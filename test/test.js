@@ -1,7 +1,7 @@
 var expect    = require("chai").expect;
 var gutil = require('gulp-util');
 var mainModule = require("../index.js");
-var config = require("../config.json");
+var config = require("../gulp.swagger.conf.json");
 
 describe("Endpoint exporter from swagger", function() {
 
