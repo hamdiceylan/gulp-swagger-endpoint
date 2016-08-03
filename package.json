@@ -27,6 +27,7 @@
     "jsesc": "^2.2.0",
     "mocha": "^2.5.3",
     "request": "^2.73.0",
+    "request-promise": "^4.1.0",
     "through2": "^2.0.1"
   }
 }

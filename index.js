@@ -4,15 +4,14 @@ var concat = require('gulp-concat');
 var header = require('gulp-header');
 var footer = require('gulp-footer');
 var jsesc = require('jsesc');
-var request = require("request");
+var request = require("request-promise");
 
 try {
   var config = require("../../gulp.swagger.conf.json");
 } catch (err){
-    console.log("Please copy the gulp.swagger.conf (located in node_modules/gulp-swagger-endpoint/) file into your root directory (where your package.json is) .. for more information, visit the GitHub page: https://github.com/hamdiceylan/gulp-swagger-endpoint");
+  console.log("Please copy the gulp.swagger.conf (located in node_modules/gulp-swagger-endpoint/) file into your root directory (where your package.json is) .. for more information, visit the GitHub page: https://github.com/hamdiceylan/gulp-swagger-endpoint");
   var config = require("./gulp.swagger.conf.json");
 }
-
 
 /**
 * Plugin constants
@@ -36,89 +35,71 @@ function endPointFiles() {
   */
   return function endPointFile(file, callback) {
     if (file.processedByEndpointCache) {
-    return callback(null, file);
-  }
+      return callback(null, file);
+    }
 
   /**
   * Call Swagger API and parse result
   */
+  function getEndpoints(endpoints, count) {
+    if(count < endpoints.length) {
+      request(endpoints[count].swaggerUrl)
+        .then(function(body) {
 
-  for (var i = 0; i <= config.endpoints.length - 1; i++) {
-    request(config.endpoints[i].swaggerUrl, function(error, response, body) {
+          var obj = JSON.parse(body);
+          var paths =obj.paths;
 
-    var obj = JSON.parse(body);
-    var paths =obj.paths;
+          endPointList += '/*  Endpoints from '+ config.endpoints[count].swaggerUrl +  ' */ \n';
 
-    endPointList += '/*  Endpoints from '+ config.endpoints[count].swaggerUrl +  ' */ \n';
-
-    if(config.useCommonJs){
-      for (var pathKey in paths){
-        var singleEndPoint = pathKey;
-        for (var methodKey in obj.paths[pathKey]){
-          endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
-          if (config.endpoints[count].prefix.change) {
-            singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
+          if(config.useCommonJs){
+            for (var pathKey in paths){
+              var singleEndPoint = pathKey;
+                for (var methodKey in obj.paths[pathKey]){
+                  endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
+                  if (config.endpoints[count].prefix.change) {
+                    singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
+                  }
+                  endPointList += "'" + config.endpoints[count].domain + singleEndPoint +  "',\n";  
+                }
+            }
+          } else {
+              for (var pathKey in paths){
+                var singleEndPoint = pathKey;
+                for (var methodKey in obj.paths[pathKey]){
+                  endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
+                  if (config.endpoints[count].prefix.change) {
+                    singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
+                  }
+                  endPointList += '"' + config.endpoints[count].domain + singleEndPoint + '",\n';  
+                }
+              }
           }
-          endPointList += "'" + config.endpoints[count].domain + singleEndPoint +  "',\n";  
-        }
-      }
+
+          getEndpoints(config.endpoints, count+1);
+
+        });
+
     } else {
-      for (var pathKey in paths){
-        var singleEndPoint = pathKey;
-        for (var methodKey in obj.paths[pathKey]){
-          endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
-          if (config.endpoints[count].prefix.change) {
-            singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
-          }
-          endPointList += '"' + config.endpoints[count].domain + singleEndPoint + '",\n';  
-
-        }
-      }
+        file.contents = new Buffer(gutil.template(endPointList, {
+          contents: jsesc(file.contents.toString('utf8')),
+          file: file
+        }));
+        file.processedByEndpointCache = true;
+        callback(null, file);  
     }
-
-    count ++;
-    checkCount(file, callback);
-
-
-    });
   }
+  getEndpoints(config.endpoints, 0)
 
   };
 
 }
 
 
-function checkCount(file, callback) {
-/*
-  The neccessary evil;
-    This in needed inorder to make sure that the request has finished, before it attempts to write to file 
-*/
-  if (count == config.endpoints.length) {
-
-  file.contents = new Buffer(gutil.template(endPointList, {
-    contents: jsesc(file.contents.toString('utf8')),
-    file: file
-  }));
-
-
-  file.processedByEndpointCache = true;
-
-  callback(null, file);  
-  }
-}
-
 function endPointStream() {
   return es.map(endPointFiles());
 }
 
-/**
-* Create file
-*
-
-*/
-
 function endPoint() {
-
 /**
 * Build template
 */
