@@ -20,16 +20,9 @@ try {
 var count = 0;
 var endPointList = "";
 
-if(config.useCommonJs){
-  var FILE_HEADER = 'module.exports  =  { \n API_URLS: { \n'
-  var FILE_FOOTER = '}};'
-}
-else{
-  var FILE_HEADER = 'API_URLS = { \n';
-  var FILE_FOOTER = '};';  
-}
 
-function endPointFiles() {
+
+function endPointFiles(env) {
   /**
   * Check file status
   */
@@ -49,17 +42,17 @@ function endPointFiles() {
           var obj = JSON.parse(body);
           var paths =obj.paths;
 
-          endPointList += '/*  Endpoints from '+ config.endpoints[count].swaggerUrl +  ' */ \n';
+          endPointList += '/*  Endpoints from '+ config[env].endpoints[count].swaggerUrl +  ' */ \n';
 
-          if(config.useCommonJs){
+          if(config[env].useCommonJs){
             for (var pathKey in paths){
               var singleEndPoint = pathKey;
                 for (var methodKey in obj.paths[pathKey]){
                   endPointList += methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + ": "
-                  if (config.endpoints[count].prefix.change) {
-                    singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
+                  if (config[env].endpoints[count].prefix.change) {
+                    singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config[env].endpoints[count].prefix.newPrefix);
                   }
-                  endPointList += "'" + config.endpoints[count].domain + singleEndPoint +  "',\n";  
+                  endPointList += "'" + config[env].endpoints[count].domain + singleEndPoint +  "',\n";  
                 }
             }
           } else {
@@ -67,15 +60,15 @@ function endPointFiles() {
                 var singleEndPoint = pathKey;
                 for (var methodKey in obj.paths[pathKey]){
                   endPointList += '"' +methodKey.toUpperCase() +"_"+ obj.paths[pathKey][methodKey]["operationId"] + '": '
-                  if (config.endpoints[count].prefix.change) {
-                    singleEndPoint = singleEndPoint.replace(config.endpoints[count].prefix.oldPrefix,config.endpoints[count].prefix.newPrefix);
+                  if (config[env].endpoints[count].prefix.change) {
+                    singleEndPoint = singleEndPoint.replace(config[env].endpoints[count].prefix.oldPrefix,config[env].endpoints[count].prefix.newPrefix);
                   }
-                  endPointList += '"' + config.endpoints[count].domain + singleEndPoint + '",\n';  
+                  endPointList += '"' + config[env].endpoints[count].domain + singleEndPoint + '",\n';  
                 }
               }
           }
 
-          getEndpoints(config.endpoints, count+1);
+          getEndpoints(config[env].endpoints, count+1);
 
         });
 
@@ -88,25 +81,42 @@ function endPointFiles() {
         callback(null, file);  
     }
   }
-  getEndpoints(config.endpoints, 0)
+  getEndpoints(config[env].endpoints, 0)
 
   };
 
 }
 
 
-function endPointStream() {
-  return es.map(endPointFiles());
+function endPointStream(env) {
+  return es.map(endPointFiles(env));
 }
 
-function endPoint() {
 /**
 * Build template
 */
+function endPoint(env) {
+console.log('env ' , env);
+
+if (!env) {
+  env = 'Default';
+}
+
+/**
+* ENV constants
+*/
+if(config[env].useCommonJs){
+  var FILE_HEADER = 'module.exports  =  { \n API_URLS: { \n'
+  var FILE_FOOTER = '}};'
+}
+else{
+  var FILE_HEADER = 'API_URLS = { \n';
+  var FILE_FOOTER = '};';  
+}
 
   return es.pipeline(
-    endPointStream(),
-    concat(config.fileName),
+    endPointStream(env),
+    concat(config[env].fileName),
     header(FILE_HEADER),
     footer(FILE_FOOTER)
   );

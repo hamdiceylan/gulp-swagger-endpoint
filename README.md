@@ -27,7 +27,8 @@ This is the default configuration file located in the package root, please copy 
 
 ```js
 {
-  "endpoints": [{
+  "Default": {
+    "endpoints": [{
     "domain": "http://petstore.swagger.io",
     "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
     "prefix": { 
@@ -38,6 +39,42 @@ This is the default configuration file located in the package root, please copy 
   }],
   "useCommonJs": true,
   "fileName": "endpoint.js"
+  }
+}
+
+```
+
+You can add more environment variables as properties; so your file could end up looking like this:
+
+
+```js
+{
+  "Default": {
+    "endpoints": [{
+    "domain": "http://petstore.swagger.io",
+    "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
+    "prefix": { 
+      "change": false,
+      "oldPrefix" : "api",
+      "newPrefix" : "_api"
+    }
+  }],
+  "useCommonJs": true,
+  "fileName": "endpoint.js"
+  },
+  "Local": {
+    "endpoints": [{
+    "domain": "http://petstore.swagger.io",
+    "swaggerUrl": "http://petstore.swagger.io/v2/swagger.json",
+    "prefix": { 
+      "change": false,
+      "oldPrefix" : "api",
+      "newPrefix" : "_api"
+    }
+  }],
+  "useCommonJs": true,
+  "fileName": "local.endpoint.js"
+  }
 }
 
 ```
@@ -50,11 +87,13 @@ This is the default configuration file located in the package root, please copy 
 
 >Plugin creates a js file which is containing all endpoints in your restfull API
 
+You can pass a parameter to the swagger function (in this case: 'Local') to create the endpoints for a specific environment. If left blank or '', default environment will be used
+
 ```js
-gulp.task('endPoint', function () {
-     gulp.src("./node_modules/gulp-swagger-endpoint/index.js")
-         .pipe(swagger())
-         .pipe(gulp.dest('./js/config'));
+gulp.task('endPoint', function() {
+    return gulp.src("./node_modules/gulp-swagger-endpoint/index.js")
+          .pipe(swagger('Default'))
+          .pipe(gulp.dest('./Scripts/Common/angularjs/config'));
 });
 ```
 
